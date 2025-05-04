@@ -4,7 +4,7 @@
 require_relative "../lib/mcp/server/fastmcp"
 
 # Create an echo MCP server
-mcp = MCP::Server::FastMCP.new("Echo")
+mcp = MCP::FastMCP.new("Echo")
 
 # Add an echo tool
 mcp.tool(:echo, description: "Echo a message back") do |message|

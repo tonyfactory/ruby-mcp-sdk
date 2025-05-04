@@ -2,9 +2,9 @@
 
 require "test_helper"
 
-class MCP::Server::FastMCPTest < Minitest::Test
+class MCP::FastMCPTest < Minitest::Test
   def setup
-    @server = MCP::Server::FastMCP.new("FastMCPTest")
+    @server = MCP::FastMCP.new("FastMCPTest")
   end
   
   def test_server_name_and_version

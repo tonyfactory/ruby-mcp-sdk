@@ -42,7 +42,7 @@ Here's how to create a basic MCP server that exposes a calculator tool:
 require 'mcp/server/fastmcp'
 
 # Create an MCP server
-mcp = MCP::Server::FastMCP.new("Calculator")
+mcp = MCP::FastMCP.new("Calculator")
 
 # Add a tool
 mcp.tool(:add) do |a, b|

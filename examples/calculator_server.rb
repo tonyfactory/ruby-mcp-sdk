@@ -4,7 +4,7 @@
 require_relative "../lib/mcp/server/fastmcp"
 
 # Create a calculator MCP server
-mcp = MCP::Server::FastMCP.new("Calculator")
+mcp = MCP::FastMCP.new("Calculator")
 
 # Add basic arithmetic tools
 mcp.tool(:add, description: "Add two numbers") do |a, b|
