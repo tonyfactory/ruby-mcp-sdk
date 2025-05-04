@@ -35,7 +35,7 @@ class MCP::ServerTest < Minitest::Test
   end
   
   def test_tool_registration_and_execution
-    @server.tool(:add) do |a:, b:|
+    @server.tool(:add) do |a, b|
       a + b
     end
     
@@ -66,7 +66,7 @@ class MCP::ServerTest < Minitest::Test
       "Static content"
     end
     
-    @server.resource("test://{id}") do |id:|
+    @server.resource("test://{id}") do |id|
       "Dynamic content for #{id}"
     end
     
@@ -98,7 +98,7 @@ class MCP::ServerTest < Minitest::Test
   end
   
   def test_prompt_registration_and_retrieval
-    @server.prompt(:greeting) do |name:|
+    @server.prompt(:greeting) do |name|
       "Hello, #{name}!"
     end
     
@@ -135,7 +135,7 @@ class MCP::ServerTest < Minitest::Test
   end
   
   def test_error_handling_for_tool_execution_error
-    @server.tool(:divide) do |a:, b:|
+    @server.tool(:divide) do |a, b|
       raise "Division by zero" if b == 0
       a / b
     end

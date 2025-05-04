@@ -7,19 +7,19 @@ require_relative "../lib/mcp/server/fastmcp"
 mcp = MCP::Server::FastMCP.new("Calculator")
 
 # Add basic arithmetic tools
-mcp.tool(:add, description: "Add two numbers") do |a:, b:|
+mcp.tool(:add, description: "Add two numbers") do |a, b|
   a + b
 end
 
-mcp.tool(:subtract, description: "Subtract two numbers") do |a:, b:|
+mcp.tool(:subtract, description: "Subtract two numbers") do |a, b|
   a - b
 end
 
-mcp.tool(:multiply, description: "Multiply two numbers") do |a:, b:|
+mcp.tool(:multiply, description: "Multiply two numbers") do |a, b|
   a * b
 end
 
-mcp.tool(:divide, description: "Divide two numbers") do |a:, b:|
+mcp.tool(:divide, description: "Divide two numbers") do |a, b|
   raise "Division by zero" if b == 0
   a.to_f / b
 end
@@ -32,7 +32,7 @@ mcp.resource("history://recent", description: "Recent calculation history") do
 end
 
 # Add a prompt for complex calculations
-mcp.prompt(:calculate, description: "Perform a complex calculation") do |expression:|
+mcp.prompt(:calculate, description: "Perform a complex calculation") do |expression|
   "Please calculate the following expression: #{expression}"
 end
 

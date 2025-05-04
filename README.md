@@ -45,7 +45,7 @@ require 'mcp/server/fastmcp'
 mcp = MCP::Server::FastMCP.new("Calculator")
 
 # Add a tool
-mcp.tool(:add) do |a:, b:|
+mcp.tool(:add) do |a, b|
   a + b
 end
 
@@ -91,7 +91,7 @@ mcp.resource("config://app") do
   { environment: "production", version: "1.0.0" }.to_json
 end
 
-mcp.resource("users://{user_id}/profile") do |user_id:|
+mcp.resource("users://{user_id}/profile") do |user_id|
   # Fetch and return user profile data
   User.find(user_id).profile.to_json
 end
@@ -101,7 +101,7 @@ end
 Tools allow LLMs to perform actions through your server:
 
 ```ruby
-mcp.tool(:send_email) do |to:, subject:, body:|
+mcp.tool(:send_email) do |to, subject, body|
   EmailService.send(to: to, subject: subject, body: body)
   "Email sent successfully"
 end
@@ -111,7 +111,7 @@ end
 Prompts are reusable templates for LLM interactions:
 
 ```ruby
-mcp.prompt(:review_code) do |code:|
+mcp.prompt(:review_code) do |code|
   "Please review this code and provide feedback:\n\n#{code}"
 end
 ```
@@ -123,7 +123,7 @@ end
 Access server context in your handlers:
 
 ```ruby
-mcp.tool(:long_task) do |files:, context:|
+mcp.tool(:long_task) do |files, context|
   files.each_with_index do |file, i|
     context.info("Processing #{file}")
     context.report_progress(i, files.length)
@@ -138,7 +138,7 @@ end
 All handlers can be async using Ruby's Fiber scheduler:
 
 ```ruby
-mcp.tool(:fetch_data) do |url:|
+mcp.tool(:fetch_data) do |url|
   response = Async::HTTP::Internet.new.get(url)
   response.read
 end

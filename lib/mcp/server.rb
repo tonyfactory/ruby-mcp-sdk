@@ -91,7 +91,12 @@ module MCP
         arguments = params[:arguments] || {}
         
         if @tools.key?(name)
-          result = @tools[name].call(**arguments.transform_keys(&:to_sym))
+          result = if arguments.is_a?(Hash) && !arguments.empty?
+            args = arguments.values
+            @tools[name].call(*args)
+          else
+            @tools[name].call
+          end
           { content: [{ type: "text", text: result.to_s }] }
         else
           raise "Tool not found: #{name}"
@@ -118,7 +123,12 @@ module MCP
         # Find matching resource pattern
         @resources.each do |pattern, handler|
           if match_data = match_uri_pattern(pattern.to_s, uri)
-            result = handler.call(**match_data)
+            result = if match_data.is_a?(Hash) && !match_data.empty?
+              args = match_data.values
+              handler.call(*args)
+            else
+              handler.call
+            end
             return {
               contents: [{
                 uri: uri,
@@ -150,7 +160,12 @@ module MCP
         arguments = params[:arguments] || {}
         
         if @prompts.key?(name)
-          result = @prompts[name].call(**arguments.transform_keys(&:to_sym))
+          result = if arguments.is_a?(Hash) && !arguments.empty?
+            args = arguments.values
+            @prompts[name].call(*args)
+          else
+            @prompts[name].call
+          end
           {
             messages: [{
               role: "user",

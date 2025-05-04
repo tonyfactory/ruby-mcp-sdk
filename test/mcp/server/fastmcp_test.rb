@@ -13,7 +13,7 @@ class MCP::Server::FastMCPTest < Minitest::Test
   end
   
   def test_tool_registration
-    @server.tool(:echo, description: "Echo back the input") do |input:|
+    @server.tool(:echo, description: "Echo back the input") do |input|
       input
     end
     
@@ -53,7 +53,7 @@ class MCP::Server::FastMCPTest < Minitest::Test
   end
   
   def test_prompt_registration
-    @server.prompt(:review, description: "Code review prompt") do |code:|
+    @server.prompt(:review, description: "Code review prompt") do |code|
       "Please review this code:\n\n#{code}"
     end
     
