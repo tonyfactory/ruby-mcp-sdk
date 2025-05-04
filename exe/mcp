@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require_relative "../lib/mcp"
-require "optparse"
+require_relative '../lib/mcp'
+require 'optparse'
 
 module MCP
   class CLI
@@ -10,13 +10,13 @@ module MCP
       command = args.shift
 
       case command
-      when "server"
+      when 'server'
         server_command(args)
-      when "client"
+      when 'client'
         client_command(args)
-      when "version", "--version", "-v"
+      when 'version', '--version', '-v'
         puts "MCP Ruby SDK version #{MCP::VERSION}"
-      when "help", "--help", "-h", nil
+      when 'help', '--help', '-h', nil
         print_help
       else
         puts "Unknown command: #{command}"
@@ -28,7 +28,7 @@ module MCP
     def self.server_command(args)
       file = args.shift
       unless file
-        puts "Please specify a server file"
+        puts 'Please specify a server file'
         exit 1
       end
 
@@ -40,9 +40,9 @@ module MCP
       load file
     end
 
-    def self.client_command(args)
-      puts "Client command not yet implemented"
-      puts "Usage: mcp client <server_command>"
+    def self.client_command(_args)
+      puts 'Client command not yet implemented'
+      puts 'Usage: mcp client <server_command>'
     end
 
     def self.print_help

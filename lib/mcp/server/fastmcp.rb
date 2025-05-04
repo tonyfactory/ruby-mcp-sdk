@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require_relative "../server"
-require_relative "../transport/stdio"
+require_relative '../server'
+require_relative '../transport/stdio'
 
 module MCP
   class FastMCP < Server
-    def initialize(name, version: "1.0.0")
+    def initialize(name, version: '1.0.0')
       super(name: name, version: version)
     end
 
@@ -23,7 +23,7 @@ module MCP
 
     def run
       transport = Transport::Stdio.new
-      
+
       transport.start do |message|
         response = process_message(message)
         transport.send_message(response) if response

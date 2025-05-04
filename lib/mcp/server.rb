@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-require_relative "types"
+require_relative 'types'
 
 module MCP
   class Server
     attr_reader :name, :version, :capabilities
 
-    def initialize(name:, version: "1.0.0")
+    def initialize(name:, version: '1.0.0')
       @name = name
       @version = version
       @capabilities = Types::ServerCapabilities.new
@@ -14,7 +14,7 @@ module MCP
       @tools = {}
       @resources = {}
       @prompts = {}
-      
+
       setup_default_handlers
     end
 
@@ -48,7 +48,7 @@ module MCP
       in { method: String }
         handle_notification(message[:method], nil)
       else
-        error_response(nil, Types::ErrorCode::INVALID_REQUEST, "Invalid message format")
+        error_response(nil, Types::ErrorCode::INVALID_REQUEST, 'Invalid message format')
       end
     end
 
@@ -56,9 +56,9 @@ module MCP
 
     def setup_default_handlers
       # Initialize handler
-      handle("initialize") do |params|
+      handle('initialize') do |_params|
         {
-          protocolVersion: "2024-11-05",
+          protocolVersion: '2024-11-05',
           capabilities: @capabilities.to_h,
           serverInfo: {
             name: @name,
@@ -68,14 +68,14 @@ module MCP
       end
 
       # List tools handler
-      handle("tools/list") do |params|
+      handle('tools/list') do |_params|
         {
           tools: @tools.keys.map do |name|
             {
               name: name.to_s,
               description: "Tool: #{name}",
               inputSchema: {
-                type: "object",
+                type: 'object',
                 properties: {},
                 required: []
               }
@@ -85,25 +85,23 @@ module MCP
       end
 
       # Call tool handler
-      handle("tools/call") do |params|
+      handle('tools/call') do |params|
         name = params[:name]&.to_sym
         arguments = params[:arguments] || {}
-        
-        if @tools.key?(name)
-          result = if arguments.is_a?(Hash) && !arguments.empty?
-            args = arguments.values
-            @tools[name].call(*args)
-          else
-            @tools[name].call
-          end
-          { content: [{ type: "text", text: result.to_s }] }
-        else
-          raise "Tool not found: #{name}"
-        end
+
+        raise "Tool not found: #{name}" unless @tools.key?(name)
+
+        result = if arguments.is_a?(Hash) && !arguments.empty?
+                   args = arguments.values
+                   @tools[name].call(*args)
+                 else
+                   @tools[name].call
+                 end
+        { content: [{ type: 'text', text: result.to_s }] }
       end
 
       # List resources handler
-      handle("resources/list") do |params|
+      handle('resources/list') do |_params|
         {
           resources: @resources.keys.map do |pattern|
             {
@@ -116,33 +114,33 @@ module MCP
       end
 
       # Read resource handler
-      handle("resources/read") do |params|
+      handle('resources/read') do |params|
         uri = params[:uri]
-        
+
         # Find matching resource pattern
         @resources.each do |pattern, handler|
-          if match_data = match_uri_pattern(pattern.to_s, uri)
-            result = if match_data.is_a?(Hash) && !match_data.empty?
-              args = match_data.values
-              handler.call(*args)
-            else
-              handler.call
-            end
-            return {
-              contents: [{
-                uri: uri,
-                mimeType: "application/json",
-                text: result.to_s
-              }]
-            }
-          end
+          next unless match_data = match_uri_pattern(pattern.to_s, uri)
+
+          result = if match_data.is_a?(Hash) && !match_data.empty?
+                     args = match_data.values
+                     handler.call(*args)
+                   else
+                     handler.call
+                   end
+          return {
+            contents: [{
+              uri: uri,
+              mimeType: 'application/json',
+              text: result.to_s
+            }]
+          }
         end
-        
+
         raise "Resource not found: #{uri}"
       end
 
       # List prompts handler
-      handle("prompts/list") do |params|
+      handle('prompts/list') do |_params|
         {
           prompts: @prompts.keys.map do |name|
             {
@@ -154,40 +152,38 @@ module MCP
       end
 
       # Get prompt handler
-      handle("prompts/get") do |params|
+      handle('prompts/get') do |params|
         name = params[:name]&.to_sym
         arguments = params[:arguments] || {}
-        
-        if @prompts.key?(name)
-          result = if arguments.is_a?(Hash) && !arguments.empty?
-            args = arguments.values
-            @prompts[name].call(*args)
-          else
-            @prompts[name].call
-          end
-          {
-            messages: [{
-              role: "user",
-              content: {
-                type: "text",
-                text: result.to_s
-              }
-            }]
-          }
-        else
-          raise "Prompt not found: #{name}"
-        end
+
+        raise "Prompt not found: #{name}" unless @prompts.key?(name)
+
+        result = if arguments.is_a?(Hash) && !arguments.empty?
+                   args = arguments.values
+                   @prompts[name].call(*args)
+                 else
+                   @prompts[name].call
+                 end
+        {
+          messages: [{
+            role: 'user',
+            content: {
+              type: 'text',
+              text: result.to_s
+            }
+          }]
+        }
       end
     end
 
     def handle_request(method, id, params)
       handler = @handlers[method]
-      
+
       if handler
         begin
           result = handler.call(params)
           Types::Response.new(id: id, result: result).to_h
-        rescue => e
+        rescue StandardError => e
           error_response(id, Types::ErrorCode::INTERNAL_ERROR, e.message)
         end
       else
@@ -199,9 +195,9 @@ module MCP
       # Notifications don't send responses
       handler = @handlers[method]
       handler&.call(params)
-    rescue => e
+    rescue StandardError => e
       # Log error but don't send response for notifications
-      $stderr.puts "Error handling notification: #{e.message}"
+      warn "Error handling notification: #{e.message}"
     end
 
     def error_response(id, code, message)
@@ -223,12 +219,10 @@ module MCP
       # Simple pattern matching for URIs like "users://{user_id}/profile"
       regex_pattern = pattern.gsub(/\{([^}]+)\}/, '(?<\1>[^/]+)')
       regex = Regexp.new("^#{regex_pattern}$")
-      
-      if match = regex.match(uri)
-        match.named_captures.transform_keys(&:to_sym)
-      else
-        nil
-      end
+
+      return unless match = regex.match(uri)
+
+      match.named_captures.transform_keys(&:to_sym)
     end
   end
 end

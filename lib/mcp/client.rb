@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require "json"
-require "timeout"
-require_relative "types"
+require 'json'
+require 'timeout'
+require_relative 'types'
 
 module MCP
   class Client
@@ -19,16 +19,16 @@ module MCP
     end
 
     def initialize!
-      raise "Already initialized" if @initialized
+      raise 'Already initialized' if @initialized
 
-      response = request("initialize", {
-        protocolVersion: "2024-11-05",
-        capabilities: {},
-        clientInfo: {
-          name: "MCP Ruby Client",
-          version: "0.1.0"
-        }
-      })
+      response = request('initialize', {
+                           protocolVersion: '2024-11-05',
+                           capabilities: {},
+                           clientInfo: {
+                             name: 'MCP Ruby Client',
+                             version: '0.1.0'
+                           }
+                         })
 
       @server_capabilities = response[:capabilities]
       @server_info = response[:serverInfo]
@@ -39,7 +39,7 @@ module MCP
 
     def list_tools
       ensure_initialized!
-      response = request("tools/list")
+      response = request('tools/list')
       response[:tools].map do |tool|
         Types::Tool.new(
           name: tool[:name],
@@ -51,13 +51,13 @@ module MCP
 
     def call_tool(name, arguments: {})
       ensure_initialized!
-      response = request("tools/call", {
-        name: name,
-        arguments: arguments
-      })
-      
+      response = request('tools/call', {
+                           name: name,
+                           arguments: arguments
+                         })
+
       content = response[:content]
-      if content.is_a?(Array) && content.first[:type] == "text"
+      if content.is_a?(Array) && content.first[:type] == 'text'
         content.first[:text]
       else
         content
@@ -66,7 +66,7 @@ module MCP
 
     def list_resources
       ensure_initialized!
-      response = request("resources/list")
+      response = request('resources/list')
       response[:resources].map do |resource|
         Types::Resource.new(
           uri: resource[:uri],
@@ -79,9 +79,9 @@ module MCP
 
     def read_resource(uri)
       ensure_initialized!
-      response = request("resources/read", { uri: uri })
+      response = request('resources/read', { uri: uri })
       contents = response[:contents]
-      
+
       if contents.is_a?(Array) && !contents.empty?
         content = contents.first
         [content[:text], content[:mimeType]]
@@ -92,7 +92,7 @@ module MCP
 
     def list_prompts
       ensure_initialized!
-      response = request("prompts/list")
+      response = request('prompts/list')
       response[:prompts].map do |prompt|
         Types::Prompt.new(
           name: prompt[:name],
@@ -110,16 +110,16 @@ module MCP
 
     def get_prompt(name, arguments: {})
       ensure_initialized!
-      response = request("prompts/get", {
-        name: name,
-        arguments: arguments
-      })
-      
+      response = request('prompts/get', {
+                           name: name,
+                           arguments: arguments
+                         })
+
       messages = response[:messages]
-      if messages.is_a?(Array) && !messages.empty?
-        message = messages.first
-        message[:content][:text] if message[:content][:type] == "text"
-      end
+      return unless messages.is_a?(Array) && !messages.empty?
+
+      message = messages.first
+      message[:content][:text] if message[:content][:type] == 'text'
     end
 
     def close
@@ -131,13 +131,13 @@ module MCP
     private
 
     def ensure_initialized!
-      raise "Client not initialized. Call initialize! first." unless @initialized
+      raise 'Client not initialized. Call initialize! first.' unless @initialized
     end
 
     def request(method, params = nil, timeout: 30)
       id = next_request_id
       message = Types::Request.new(id: id, method: method, params: params).to_h
-      
+
       response_future = Queue.new
       @pending_requests[id] = response_future
 
@@ -146,12 +146,10 @@ module MCP
       begin
         # Wait for response with timeout
         response = Timeout.timeout(timeout) { response_future.pop }
-        
-        if response[:error]
-          raise ProtocolError, "Error: #{response[:error][:message]}"
-        else
-          response[:result]
-        end
+
+        raise ProtocolError, "Error: #{response[:error][:message]}" if response[:error]
+
+        response[:result]
       rescue Timeout::Error
         raise TimeoutError, "Request timed out after #{timeout} seconds"
       ensure

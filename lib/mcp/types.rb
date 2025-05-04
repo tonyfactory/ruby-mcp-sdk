@@ -7,7 +7,7 @@ module MCP
       attr_reader :jsonrpc, :id
 
       def initialize(id:)
-        @jsonrpc = "2.0"
+        @jsonrpc = '2.0'
         @id = id
       end
 
@@ -63,7 +63,7 @@ module MCP
       attr_reader :jsonrpc, :method, :params
 
       def initialize(method:, params: nil)
-        @jsonrpc = "2.0"
+        @jsonrpc = '2.0'
         @method = method
         @params = params
       end
@@ -198,11 +198,11 @@ module MCP
 
     # Error codes
     module ErrorCode
-      PARSE_ERROR = -32700
-      INVALID_REQUEST = -32600
-      METHOD_NOT_FOUND = -32601
-      INVALID_PARAMS = -32602
-      INTERNAL_ERROR = -32603
+      PARSE_ERROR = -32_700
+      INVALID_REQUEST = -32_600
+      METHOD_NOT_FOUND = -32_601
+      INVALID_PARAMS = -32_602
+      INTERNAL_ERROR = -32_603
     end
 
     # Error response

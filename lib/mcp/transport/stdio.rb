@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "json"
+require 'json'
 
 module MCP
   module Transport
@@ -12,32 +12,30 @@ module MCP
         @mutex = Mutex.new
       end
 
-      def start(&block)
+      def start
         # Read messages in a loop
         loop do
-          begin
-            # Read message length header
-            header = @input.gets
-            break unless header
+          # Read message length header
+          header = @input.gets
+          break unless header
 
-            if header =~ /Content-Length: (\d+)/i
-              content_length = $1.to_i
-              
-              # Read the blank line after headers
-              @input.gets
-              
-              # Read the JSON content
-              content = @input.read(content_length)
-              message = JSON.parse(content, symbolize_names: true)
-              
-              # Process the message
-              yield message if block_given?
-            end
-          rescue EOFError
-            break
-          rescue => e
-            log_error("Error reading message: #{e.message}")
+          if header =~ /Content-Length: (\d+)/i
+            content_length = ::Regexp.last_match(1).to_i
+
+            # Read the blank line after headers
+            @input.gets
+
+            # Read the JSON content
+            content = @input.read(content_length)
+            message = JSON.parse(content, symbolize_names: true)
+
+            # Process the message
+            yield message if block_given?
           end
+        rescue EOFError
+          break
+        rescue StandardError => e
+          log_error("Error reading message: #{e.message}")
         end
       end
 
