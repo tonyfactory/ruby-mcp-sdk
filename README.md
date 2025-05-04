@@ -1,90 +1,90 @@
 # MCP Ruby SDK
 
-A Ruby implementation of the Model Context Protocol (MCP), enabling Ruby applications to create servers and clients that expose capabilities to Large Language Models.
+Model Context Protocol (MCP) のRuby実装で、RubyアプリケーションがLarge Language Modelsに機能を公開するサーバーとクライアントを作成できるようにします。
 
-## Overview
+## 概要
 
-The Model Context Protocol allows applications to provide context for LLMs in a standardized way, separating the concerns of providing context from the actual LLM interaction. This Ruby SDK implements the full MCP specification, making it easy to:
+Model Context Protocolは、アプリケーションがLLMにコンテキストを標準化された方法で提供できるようにし、コンテキスト提供と実際のLLMとのやり取りの関心事を分離します。このRuby SDKはMCP仕様の完全な実装を提供し、以下のことを簡単に行えます：
 
-- Build MCP clients that can connect to any MCP server
-- Create MCP servers that expose resources, prompts and tools
-- Use standard transports like stdio and SSE
-- Handle all MCP protocol messages and lifecycle events
+- 任意のMCPサーバーに接続できるMCPクライアントの構築
+- リソース、プロンプト、ツールを公開するMCPサーバーの作成
+- stdioやSSEのような標準的なトランスポートの使用
+- すべてのMCPプロトコルメッセージとライフサイクルイベントの処理
 
-## Installation
+## インストール
 
-Add this line to your application's Gemfile:
+アプリケーションのGemfileに以下の行を追加してください：
 
 ```ruby
 gem 'mcp'
 ```
 
-And then execute:
+そして以下を実行します：
 
 ```bash
 bundle install
 ```
 
-Or install it yourself as:
+または、自分でインストールする場合：
 
 ```bash
 gem install mcp
 ```
 
-## Quick Start
+## クイックスタート
 
-### Creating a Simple Server
+### シンプルなサーバーの作成
 
-Here's how to create a basic MCP server that exposes a calculator tool:
+計算機ツールを公開する基本的なMCPサーバーの作成方法：
 
 ```ruby
 # server.rb
 require 'mcp/server/fastmcp'
 
-# Create an MCP server
+# MCPサーバーを作成
 mcp = MCP::FastMCP.new("Calculator")
 
-# Add a tool
+# ツールを追加
 mcp.tool(:add) do |a, b|
   a + b
 end
 
-# Run the server
+# サーバーを実行
 if __FILE__ == $0
   mcp.run
 end
 ```
 
-### Creating a Client
+### クライアントの作成
 
-Here's how to create a client that connects to an MCP server:
+MCPサーバーに接続するクライアントの作成方法：
 
 ```ruby
 # client.rb
 require 'mcp/client'
 require 'mcp/client/stdio'
 
-# Connect to a server
+# サーバーに接続
 MCP::Client::Stdio.connect(['python', 'server.py']) do |client|
-  # Initialize the connection
+  # 接続を初期化
   client.initialize!
 
-  # List available tools
+  # 利用可能なツールを一覧表示
   tools = client.list_tools
-  puts "Available tools: #{tools.map(&:name).join(', ')}"
+  puts "利用可能なツール: #{tools.map(&:name).join(', ')}"
 
-  # Call a tool
+  # ツールを呼び出す
   result = client.call_tool('add', arguments: { a: 5, b: 3 })
   puts "5 + 3 = #{result}"
 end
 ```
 
-## Core Concepts
+## コアコンセプト
 
-The MCP protocol defines three core primitives:
+MCPプロトコルは3つのコアプリミティブを定義しています：
 
-### Resources
-Resources are read-only data sources exposed by servers. They can be static files or dynamic content:
+### リソース
+リソースはサーバーが公開する読み取り専用のデータソースです。静的ファイルや動的コンテンツにすることができます：
 
 ```ruby
 mcp.resource("config://app") do
@@ -92,50 +92,50 @@ mcp.resource("config://app") do
 end
 
 mcp.resource("users://{user_id}/profile") do |user_id|
-  # Fetch and return user profile data
+  # ユーザープロファイルデータを取得して返す
   User.find(user_id).profile.to_json
 end
 ```
 
-### Tools
-Tools allow LLMs to perform actions through your server:
+### ツール
+ツールはLLMがサーバーを通じてアクションを実行できるようにします：
 
 ```ruby
 mcp.tool(:send_email) do |to, subject, body|
   EmailService.send(to: to, subject: subject, body: body)
-  "Email sent successfully"
+  "メールを送信しました"
 end
 ```
 
-### Prompts
-Prompts are reusable templates for LLM interactions:
+### プロンプト
+プロンプトはLLMとのやり取りのための再利用可能なテンプレートです：
 
 ```ruby
 mcp.prompt(:review_code) do |code|
-  "Please review this code and provide feedback:\n\n#{code}"
+  "このコードをレビューしてフィードバックを提供してください：\n\n#{code}"
 end
 ```
 
-## Advanced Features
+## 高度な機能
 
-### Context Support
+### コンテキストサポート
 
-Access server context in your handlers:
+ハンドラー内でサーバーコンテキストにアクセス：
 
 ```ruby
 mcp.tool(:long_task) do |files, context|
   files.each_with_index do |file, i|
-    context.info("Processing #{file}")
+    context.info("#{file}を処理中")
     context.report_progress(i, files.length)
-    # Process file...
+    # ファイルを処理...
   end
-  "Processing complete"
+  "処理が完了しました"
 end
 ```
 
-### Async Support
+### 非同期サポート
 
-All handlers can be async using Ruby's Fiber scheduler:
+RubyのFiberスケジューラーを使用して、すべてのハンドラーを非同期にできます：
 
 ```ruby
 mcp.tool(:fetch_data) do |url|
@@ -144,29 +144,29 @@ mcp.tool(:fetch_data) do |url|
 end
 ```
 
-## Examples
+## 例
 
-Check the `examples/` directory for complete examples:
+完全な例については`examples/`ディレクトリを確認してください：
 
-- `calculator_server.rb` - A simple calculator server
-- `echo_server.rb` - Echo server demonstrating all primitives
-- `client_example.rb` - Client usage examples
+- `calculator_server.rb` - シンプルな計算機サーバー
+- `echo_server.rb` - すべてのプリミティブを示すエコーサーバー
+- `client_example.rb` - クライアントの使用例
 
-## Documentation
+## ドキュメント
 
-For more information on the Model Context Protocol, see:
+Model Context Protocolの詳細については、以下を参照してください：
 
-- [Model Context Protocol documentation](https://modelcontextprotocol.io)
-- [Model Context Protocol specification](https://spec.modelcontextprotocol.io)
+- [Model Context Protocol ドキュメント](https://modelcontextprotocol.io)
+- [Model Context Protocol 仕様](https://spec.modelcontextprotocol.io)
 
-## Contributing
+## コントリビューション
 
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
+1. フォークする
+2. フィーチャーブランチを作成する (`git checkout -b my-new-feature`)
+3. 変更をコミットする (`git commit -am 'Add some feature'`)
+4. ブランチにプッシュする (`git push origin my-new-feature`)
+5. プルリクエストを作成する
 
-## License
+## ライセンス
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+このプロジェクトはMITライセンスの下でライセンスされています - 詳細はLICENSEファイルを参照してください。
