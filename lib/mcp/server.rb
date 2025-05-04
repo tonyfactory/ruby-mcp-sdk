@@ -38,15 +38,20 @@ module MCP
     end
 
     def process_message(message)
-      case message
-      in { method: String, id: Integer, params: params }
-        handle_request(message[:method], message[:id], params)
-      in { method: String, id: Integer }
-        handle_request(message[:method], message[:id], nil)
-      in { method: String, params: params }
-        handle_notification(message[:method], params)
-      in { method: String }
-        handle_notification(message[:method], nil)
+      if message.is_a?(Hash) && message[:method].is_a?(String)
+        if message[:id].is_a?(Integer)
+          if message.key?(:params)
+            handle_request(message[:method], message[:id], message[:params])
+          else
+            handle_request(message[:method], message[:id], nil)
+          end
+        else
+          if message.key?(:params)
+            handle_notification(message[:method], message[:params])
+          else
+            handle_notification(message[:method], nil)
+          end
+        end
       else
         error_response(nil, Types::ErrorCode::INVALID_REQUEST, 'Invalid message format')
       end

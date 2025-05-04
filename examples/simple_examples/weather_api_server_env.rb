@@ -15,9 +15,11 @@ require 'uri'
 
 # 環境変数ファイルを読み込む簡易的な実装
 def load_env_file(filename = '.env')
-  return unless File.exist?(filename)
+  # このスクリプトのディレクトリから.envファイルを探す
+  env_path = File.join(File.dirname(__FILE__), filename)
+  return unless File.exist?(env_path)
   
-  File.readlines(filename).each do |line|
+  File.readlines(env_path).each do |line|
     line.strip!
     next if line.empty? || line.start_with?('#')
     
@@ -35,8 +37,8 @@ mcp = MCP::FastMCP.new('weather-api')
 # APIキーの確認
 API_KEY = ENV['OPENWEATHER_API_KEY']
 if API_KEY.nil? || API_KEY.empty?
-  puts "Error: OPENWEATHER_API_KEY not found in .env file"
-  puts "Please create a .env file based on .env.example and set your API key"
+  STDERR.puts "Error: OPENWEATHER_API_KEY not found in .env file"
+  STDERR.puts "Please create a .env file based on .env.example and set your API key"
   exit 1
 end
 
@@ -162,12 +164,12 @@ end
 
 # サーバーを実行
 if __FILE__ == $0
-  puts "Starting Weather API Server with environment file..."
-  puts "Using OpenWeatherMap API"
-  puts "API Key loaded from .env file"
-  puts "\nAvailable tools:"
-  puts "  - get_forecast: Get current weather for a city"
-  puts "  - get_5day_forecast: Get 5-day forecast for a city"
-  puts "  - get_weather_by_coordinates: Get weather by latitude and longitude"
+  STDERR.puts "Starting Weather API Server with environment file..."
+  STDERR.puts "Using OpenWeatherMap API"
+  STDERR.puts "API Key loaded from .env file"
+  STDERR.puts "\nAvailable tools:"
+  STDERR.puts "  - get_forecast: Get current weather for a city"
+  STDERR.puts "  - get_5day_forecast: Get 5-day forecast for a city"
+  STDERR.puts "  - get_weather_by_coordinates: Get weather by latitude and longitude"
   mcp.run
 end
