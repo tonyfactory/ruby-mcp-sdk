@@ -116,6 +116,7 @@ module MCP
       # Read resource handler
       handle('resources/read') do |params|
         uri = params[:uri]
+        found_resource = nil
 
         # Find matching resource pattern
         @resources.each do |pattern, handler|
@@ -128,16 +129,17 @@ module MCP
                    else
                      handler.call
                    end
-          return {
+          found_resource = {
             contents: [{
               uri: uri,
               mimeType: 'application/json',
               text: result.to_s
             }]
           }
+          break
         end
 
-        raise "Resource not found: #{uri}"
+        found_resource || raise("Resource not found: #{uri}")
       end
 
       # List prompts handler
