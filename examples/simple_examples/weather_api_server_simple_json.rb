@@ -84,75 +84,100 @@ loop do
     end
     
     # Process message
-    response = case message[:method]
-    when 'initialize'
-      {
-        jsonrpc: '2.0',
-        id: message[:id],
-        result: {
-          protocolVersion: '2024-11-05',
-          capabilities: {
-            tools: {}
-          },
-          serverInfo: {
-            name: 'weather-api-simple',
-            version: '1.0.0'
-          }
-        }
-      }
-    when 'tools/list'
-      {
-        jsonrpc: '2.0',
-        id: message[:id],
-        result: {
-          tools: [
-            {
-              name: 'get_forecast',
-              description: 'Get current weather for a city',
-              inputSchema: {
-                type: 'object',
-                properties: {
-                  city: { type: 'string', description: 'City name' }
-                },
-                required: ['city']
-              }
-            }
-          ]
-        }
-      }
-    when 'tools/call'
-      tool_name = message[:params][:name]
-      arguments = message[:params][:arguments] || {}
-      
-      if tool_name == 'get_forecast'
-        city = arguments[:city] || arguments['city']
-        result = get_forecast(city)
+    response = if message[:method] == 'notifications/initialized'
+      # Notification messages don't need a response
+      nil
+    elsif message[:id].nil?
+      # If no id is provided, this might be a notification, don't respond
+      STDERR.puts "No id provided for method: #{message[:method]}"
+      nil
+    else
+      case message[:method]
+      when 'initialize'
         {
           jsonrpc: '2.0',
           id: message[:id],
           result: {
-            content: [{ type: 'text', text: result }]
+            protocolVersion: '2024-11-05',
+            capabilities: {
+              tools: {}
+            },
+            serverInfo: {
+              name: 'weather-api-simple',
+              version: '1.0.0'
+            }
           }
         }
+      when 'tools/list'
+        {
+          jsonrpc: '2.0',
+          id: message[:id],
+          result: {
+            tools: [
+              {
+                name: 'get_forecast',
+                description: 'Get current weather for a city',
+                inputSchema: {
+                  type: 'object',
+                  properties: {
+                    city: { type: 'string', description: 'City name' }
+                  },
+                  required: ['city']
+                }
+              }
+            ]
+          }
+        }
+      when 'resources/list'
+        {
+          jsonrpc: '2.0',
+          id: message[:id],
+          result: {
+            resources: []
+          }
+        }
+      when 'prompts/list'
+        {
+          jsonrpc: '2.0',
+          id: message[:id],
+          result: {
+            prompts: []
+          }
+        }
+      when 'tools/call'
+        tool_name = message[:params][:name]
+        arguments = message[:params][:arguments] || {}
+        
+        if tool_name == 'get_forecast'
+          city = arguments[:city] || arguments['city']
+          result = get_forecast(city)
+          {
+            jsonrpc: '2.0',
+            id: message[:id],
+            result: {
+              content: [{ type: 'text', text: result }]
+            }
+          }
+        else
+          {
+            jsonrpc: '2.0',
+            id: message[:id],
+            error: {
+              code: -32601,
+              message: "Tool not found: #{tool_name}"
+            }
+          }
+        end
       else
         {
           jsonrpc: '2.0',
           id: message[:id],
           error: {
             code: -32601,
-            message: "Tool not found: #{tool_name}"
+            message: "Method not found: #{message[:method]}"
           }
         }
       end
-    else
-      {
-        jsonrpc: '2.0',
-        id: message[:id],
-        error: {
-          code: -32601,
-          message: "Method not found: #{message[:method]}"
-        }
-      }
     end
     
     # Send response
