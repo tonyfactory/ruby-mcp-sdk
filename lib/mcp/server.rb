@@ -119,7 +119,8 @@ module MCP
 
         # Find matching resource pattern
         @resources.each do |pattern, handler|
-          next unless match_data = match_uri_pattern(pattern.to_s, uri)
+          match_data = match_uri_pattern(pattern.to_s, uri)
+          next unless match_data
 
           result = if match_data.is_a?(Hash) && !match_data.empty?
                      args = match_data.values
@@ -220,7 +221,9 @@ module MCP
       regex_pattern = pattern.gsub(/\{([^}]+)\}/, '(?<\1>[^/]+)')
       regex = Regexp.new("^#{regex_pattern}$")
 
-      return unless match = regex.match(uri)
+      match = regex.match(uri)
+      return {} if match && match.named_captures.empty?  # Pattern without parameters
+      return nil unless match
 
       match.named_captures.transform_keys(&:to_sym)
     end
