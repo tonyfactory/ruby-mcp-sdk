@@ -1,0 +1,68 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require_relative "../lib/mcp"
+require "optparse"
+
+module MCP
+  class CLI
+    def self.run(args)
+      command = args.shift
+
+      case command
+      when "server"
+        server_command(args)
+      when "client"
+        client_command(args)
+      when "version", "--version", "-v"
+        puts "MCP Ruby SDK version #{MCP::VERSION}"
+      when "help", "--help", "-h", nil
+        print_help
+      else
+        puts "Unknown command: #{command}"
+        print_help
+        exit 1
+      end
+    end
+
+    def self.server_command(args)
+      file = args.shift
+      unless file
+        puts "Please specify a server file"
+        exit 1
+      end
+
+      unless File.exist?(file)
+        puts "File not found: #{file}"
+        exit 1
+      end
+
+      load file
+    end
+
+    def self.client_command(args)
+      puts "Client command not yet implemented"
+      puts "Usage: mcp client <server_command>"
+    end
+
+    def self.print_help
+      puts <<~HELP
+        MCP Ruby SDK
+
+        Usage: mcp <command> [options]
+
+        Commands:
+          server <file>     Run an MCP server from the specified file
+          client <command>  Connect to an MCP server (not yet implemented)
+          version          Show version information
+          help             Show this help message
+
+        Examples:
+          mcp server my_server.rb
+          mcp version
+      HELP
+    end
+  end
+end
+
+MCP::CLI.run(ARGV) if __FILE__ == $0
