@@ -30,11 +30,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   # Runtime dependencies
-  spec.add_dependency "async", "~> 2.6"
-  spec.add_dependency "async-http", "~> 0.60"
-  spec.add_dependency "async-websocket", "~> 0.25"
-  spec.add_dependency "json_schemer", "~> 2.0"
-  spec.add_dependency "zeitwerk", "~> 2.6"
+  # No runtime dependencies needed - using only stdlib
 
   # Development dependencies
   spec.add_development_dependency "minitest", "~> 5.18"

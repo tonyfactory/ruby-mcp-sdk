@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require "async"
 require_relative "types"
 
 module MCP

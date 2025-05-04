@@ -21,8 +21,8 @@ module MCP
 
           client = Client.new(transport)
 
-          # Start message processing in background
-          Async do |task|
+          # Start message processing in background thread
+          thread = Thread.new do
             transport.start do |message|
               client.send(:handle_response, message)
             end
@@ -36,6 +36,7 @@ module MCP
             end
           ensure
             client.close
+            thread.kill if thread.alive?
             Process.kill("TERM", wait_thread.pid) rescue nil
           end
         end

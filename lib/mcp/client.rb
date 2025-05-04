@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 require "json"
-require "async"
-require "async/queue"
+require "timeout"
 require_relative "types"
 
 module MCP
@@ -139,24 +138,21 @@ module MCP
       id = next_request_id
       message = Types::Request.new(id: id, method: method, params: params).to_h
       
-      response_future = Async::Queue.new
+      response_future = Queue.new
       @pending_requests[id] = response_future
 
       @transport.send_message(message)
 
       begin
-        Async do |task|
-          task.with_timeout(timeout) do
-            response = response_future.dequeue
-            
-            if response[:error]
-              raise ProtocolError, "Error: #{response[:error][:message]}"
-            else
-              response[:result]
-            end
-          end
-        end.wait
-      rescue Async::TimeoutError
+        # Wait for response with timeout
+        response = Timeout.timeout(timeout) { response_future.pop }
+        
+        if response[:error]
+          raise ProtocolError, "Error: #{response[:error][:message]}"
+        else
+          response[:result]
+        end
+      rescue Timeout::Error
         raise TimeoutError, "Request timed out after #{timeout} seconds"
       ensure
         @pending_requests.delete(id)
@@ -174,7 +170,7 @@ module MCP
       return unless id
 
       response_future = @pending_requests[id]
-      response_future&.enqueue(message)
+      response_future&.push(message)
     end
   end
 end
