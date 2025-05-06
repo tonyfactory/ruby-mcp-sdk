@@ -7,6 +7,7 @@ require_relative 'mcp/client'
 require_relative 'mcp/transport/stdio'
 require_relative 'mcp/server/fastmcp'
 require_relative 'mcp/client/stdio'
+require_relative 'mcp/client/misoca'
 
 module MCP
   class Error < StandardError; end

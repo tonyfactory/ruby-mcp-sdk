@@ -4,6 +4,10 @@ source 'https://rubygems.org'
 
 gemspec
 
+# OAuth2 for Misoca API authentication
+gem 'oauth2', '~> 2.0'
+gem 'dotenv', '~> 2.8'
+
 group :development do
   gem 'yard', '~> 0.9'
 end

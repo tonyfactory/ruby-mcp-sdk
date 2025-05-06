@@ -79,6 +79,85 @@ MCP::Client::Stdio.connect(['python', 'server.py']) do |client|
 end
 ```
 
+## Misoca API 統合
+
+このSDKでは、Misoca APIを使用して請求書データをClaudeデスクトップから取得できるようになりました。この機能を使用するには、まず以下の手順でMisocaアプリケーションを登録する必要があります。
+
+### Misoca アプリケーション登録
+
+1. Misocaにログインした状態で、[https://app.misoca.jp/oauth2/applications](https://app.misoca.jp/oauth2/applications) にアクセスします
+2. 「新しいアプリケーション」ボタンをクリックして、アプリケーション登録画面に進みます
+3. 以下の情報を入力します：
+   - アプリケーション名: 任意の名前（例: Claude Desktop Integration）
+   - リダイレクトURI: `http://localhost:9393/callback`（または任意のコールバックURI）
+4. 登録後、アプリケーションIDとシークレットキーが発行されます
+
+### 環境設定
+
+`.env`ファイルを作成し、以下の情報を設定します（`.env.example`からコピーできます）：
+
+```
+# Misoca API credentials
+MISOCA_APPLICATION_ID=your_application_id
+MISOCA_APP_SECRET_KEY=your_app_secret_key
+MISOCA_REDIRECT_URI=http://localhost:9393/callback
+```
+
+### Misoca API クライアントの使用方法
+
+#### コマンドラインから使用する
+
+```bash
+# 認証URLの取得
+bundle exec exe/misoca authorize
+
+# 認証コードを使ってトークンを取得
+bundle exec exe/misoca callback <authorization_code>
+
+# 請求書一覧の取得
+bundle exec exe/misoca list
+
+# 特定の請求書の詳細を取得
+bundle exec exe/misoca get <invoice_id>
+
+# 請求書PDFをダウンロード
+bundle exec exe/misoca download <invoice_id> [output_path]
+```
+
+#### Rubyコードから使用する
+
+```ruby
+require 'mcp'
+require 'dotenv'
+
+# 環境変数を読み込む
+Dotenv.load
+
+# Misocaクライアントを作成
+client = MCP::Client::Misoca.new
+
+# 認証URL生成
+auth_url = client.authorize_url('read')
+puts "認証URL: #{auth_url}"
+
+# 認証コードを使ってトークン取得
+token = client.get_access_token(authorization_code)
+
+# 請求書一覧取得
+invoices = client.list_invoices
+puts "請求書数: #{invoices.size}"
+
+# 特定の請求書の詳細取得
+invoice = client.get_invoice(invoice_id)
+puts "請求書タイトル: #{invoice['title']}"
+
+# 請求書PDFのダウンロード
+pdf_data = client.download_invoice_pdf(invoice_id)
+File.binwrite("invoice.pdf", pdf_data)
+```
+
+サンプルコードは `examples/misoca_example.rb` を参照してください。
+
 ## コアコンセプト
 
 MCPプロトコルは3つのコアプリミティブを定義しています：
@@ -151,6 +230,7 @@ end
 - `calculator_server.rb` - シンプルな計算機サーバー
 - `echo_server.rb` - すべてのプリミティブを示すエコーサーバー
 - `client_example.rb` - クライアントの使用例
+- `misoca_example.rb` - Misoca API クライアントの使用例
 
 ## ドキュメント
 
@@ -158,6 +238,11 @@ Model Context Protocolの詳細については、以下を参照してくださ�
 
 - [Model Context Protocol ドキュメント](https://modelcontextprotocol.io)
 - [Model Context Protocol 仕様](https://spec.modelcontextprotocol.io)
+
+Misoca APIの詳細については、以下を参照してください：
+
+- [Misoca API ドキュメント](https://doc.misoca.jp/)
+- [Misoca API v3 ドキュメント](https://doc.misoca.jp/v3/)
 
 ## コントリビューション
 
