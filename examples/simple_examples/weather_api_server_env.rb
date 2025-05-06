@@ -15,9 +15,16 @@ require 'uri'
 
 # 環境変数ファイルを読み込む簡易的な実装
 def load_env_file(filename = '.env')
-  # このスクリプトのディレクトリから.envファイルを探す
-  env_path = File.join(File.dirname(__FILE__), filename)
-  return unless File.exist?(env_path)
+  # アプリケーションルートの.envファイルを探す
+  script_dir = File.dirname(__FILE__)
+  root_dir = File.expand_path(File.join(script_dir, '..', '..'))
+  env_path = File.join(root_dir, filename)
+  
+  unless File.exist?(env_path)
+    # 後方互換性のためスクリプトディレクトリも確認
+    env_path = File.join(script_dir, filename)
+    return unless File.exist?(env_path)
+  end
   
   File.readlines(env_path).each do |line|
     line.strip!

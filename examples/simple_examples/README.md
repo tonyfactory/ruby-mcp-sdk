@@ -30,9 +30,12 @@ ruby weather_demo_client.rb
 実際の天気データを取得するには、OpenWeatherMap APIキーが必要です：
 
 1. [OpenWeatherMap](https://openweathermap.org/api) で無料のAPIキーを取得
-2. `.env.example` を `.env` にコピーしてAPIキーを設定：
+2. アプリケーションルートの `.env.example` を `.env` にコピーしてAPIキーを設定：
 
 ```bash
+# プロジェクトルートに移動
+cd /path/to/ruby-mcp-sdk
+
 # .env.exampleをコピー
 cp .env.example .env
 
